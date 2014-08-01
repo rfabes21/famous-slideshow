@@ -1,15 +1,14 @@
-define(function (require, exports, module) {
+ define(function (require, exports, module) {
 
 var rich = require('rich');
 var template = require('hbs!../../templates/camera');
 
 var CameraView = rich.ItemView.extend({
     template: template,
-    camerWidth: 0.6 * window.innerHeight,
-    zIndex: 1,
+    cameraWidth: 0.6 * window.innerHeight,
     className: 'camera',
     size: function(){
-        return [this.camerWidth, true];
+        return [this.cameraWidth, true];
     },
 
     initialize: function(){
