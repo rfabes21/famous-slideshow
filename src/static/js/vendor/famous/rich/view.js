@@ -34,7 +34,7 @@ var FamousView = marionette.View.extend({
     constructor: function(options){
         options || (options = {});
 
-        this.children = this.subviews = new backbone.ChildViewContainer();
+        this.children = new backbone.ChildViewContainer();
 
         /* >>> BEGIN marionette.View() override */
          _.bindAll(this, 'render');
@@ -152,10 +152,24 @@ var FamousView = marionette.View.extend({
         return this._spec;
     },
 
-    invalidate: function(){
+    invalidateLayout: function(){
+        var superviewSize = this.superview.getSize();
+        // TODO need to recalculate the constraints.
+
+        this.children.each(function(subview){
+            subview.invalidateLayout();
+        });
+    },
+
+    invalidateView: function(){
         this._render();
         this.triggerRichInvalidate();
     },
+
+    // invalidate: function(){
+    //     this._render();
+    //     this.triggerRichInvalidate();
+    // },
 
     _render: function(){
         var spec;
@@ -252,7 +266,6 @@ var FamousView = marionette.View.extend({
 
         this.children.each(function(view){
             view.context = context;
-            view.superview = this;
             relative.add(view);
         }, this);
 
@@ -260,6 +273,7 @@ var FamousView = marionette.View.extend({
     },
 
     addSubview: function(view, zIndex){
+        view.superview = this;
 
         function setZIndex(value){
             view.zIndex = value;
@@ -276,7 +290,7 @@ var FamousView = marionette.View.extend({
         this.children.add(view);
 
         if(this.root){
-            this.invalidate();
+            this.invalidateView();
         }
     },
 
@@ -332,11 +346,14 @@ var FamousView = marionette.View.extend({
     },
 
     removeSubview: function(view){
+        view.superview = null;
+        view.context = null;
+
         this.children.remove(view);
         this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
 
         if(this.root){
-            this.invalidate();
+            this.invalidateView();
         }
     },
 
@@ -348,7 +365,7 @@ var FamousView = marionette.View.extend({
         this.properties.size = value;
 
         if(this.root){
-            this.invalidate();
+            this.invalidateView();
         }
     },
 
@@ -369,15 +386,17 @@ var FamousView = marionette.View.extend({
         // this wrongly assumes it will always have a
         // .commit function. Will need to poribably rethink this.
 
-        if (this.className){
-            renderable.addClass(_.result(this, 'className'));
-        }
-
         if(!renderable._currTarget){
             renderable.setup(context._allocator);
         }
 
         var $el = $(renderable._currTarget);
+
+        if (this.className){
+            var className = _.result(this, 'className');
+            $el.addClass(className);
+            renderable.addClass(className);
+        }
 
         var attrs = _.extend({}, _.result(this, 'attributes'));
         if (this.id) attrs.id = _.result(this, 'id');
