@@ -3,20 +3,22 @@ define(function (require, exports, module) {
 var rich = require('rich');
 var Modifier = require('famous/core/Modifier');
 var Transform = require('famous/core/Transform');
-var Slide = require('./slide').Slide;
+var SlideView = require('./slide-view').SlideView;
+var Slide = require('app/slideshow/models/slide').Slide;
 
-var cameraWidth =  0.6 * window.innerHeight;
-var slideWidth = 0.8 * cameraWidth;
-var slideHeight = slideWidth + 40;
-
-var SlideshowView = rich.ItemView.extend({
-    shouldInitiateRenderable: false,
-    // nestedSubviews: true,
+var SlideshowView = rich.View.extend({
+    nestedSubviews: true,
     className: 'slideshow',
-    size: [slideWidth, slideHeight],
+
 
     initialize: function(){
+        var slide = new Slide();
 
+        this.slideView = new SlideView({
+            model: slide,
+        });
+
+        this.addSubview(this.slideView);
     },
 
     onShow: function(){
