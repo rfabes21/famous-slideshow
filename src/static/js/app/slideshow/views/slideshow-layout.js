@@ -29,9 +29,9 @@ var SlideshowLayout = rich.LayoutView.extend({
 
         slideShow : rich.Region.extend({
             size: [slideWidth, slideHeight],
+            zIndex: 3,
             modifier: function(){
                 return new Modifier({
-                    zIndex: 3,
                     origin: [0.5, 0],
                     align: [0.5, 0],
                     transform: Transform.translate(0, slidePosition, 0),

@@ -1,17 +1,17 @@
 define(function (require, exports, module) {
 
 var rich = require('rich');
-var template = require('hbs!../../templates/slide-view');
+var template = require('hbs!../../templates/film-view');
 var Transform = require('famous/core/Transform');
 
-var SlideView = rich.ItemView.extend({
+var FilmView = rich.ItemView.extend({
     template: template,
-    className: 'slide',
+    className: 'film-view',
 
     initialize: function(){
     },
 });
 
-exports.SlideView = SlideView;
+exports.FilmView = FilmView;
 
 });
