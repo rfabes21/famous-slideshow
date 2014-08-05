@@ -8,6 +8,8 @@ var FamousLayoutView = require('./layoutviews').FamousLayoutView;
 var FamousView = require('./view').FamousView;
 var utils = require('./utils');
 var events = require('./events');
+var autolayout = require('./autolayout/init');
+
 
 var regionClassWithConfig = function(config){
     var modifier = utils.modifierWithAlign(config, modifier);
@@ -76,7 +78,16 @@ var FamousRegion = marionette.Region.extend({
             this.context.on('resize', this.superviewDidResize.bind(this));
         }
 
+        this._initializeConstraints();
+        this.view._initializeConstraints();
         this.listenTo(this.view, events.INVALIDATE, this._viewDidChange);
+    },
+
+    _initializeConstraints: function(){
+        var size = this.getSize();
+        this._autolayout = {};
+        this._autolayout.width = autolayout.cv('width', size[0]);
+        this._autolayout.height = autolayout.cv('height', size[1]);
     },
 
     superviewDidResize: function(){
@@ -224,7 +235,7 @@ var FamousRegion = marionette.Region.extend({
             view.__init__(this.context);
 
         }
-
+        this.view.name = 'region'
         // view.context = this.context;
         var size = this.getSize();
         if(size){
