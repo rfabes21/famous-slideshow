@@ -15,10 +15,21 @@
 
 .film {
     width: 95%;
-    height: 85%;
+    height: 88%;
     background-color: #222;
     pointer-events: none;
     margin: 2.5% auto 0;
+}
+
+.photo {
+    width: 95%;
+    height: 88%;
+    pointer-events: none;
+    margin: 2.5% auto 0;
+
+    img {
+        width: 100%;
+    }
 }
 
 .overflow-hidden {

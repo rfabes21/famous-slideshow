@@ -5,7 +5,7 @@ var Engine = require('famous/core/Engine');
 var rich = require('rich');
 
 
-var context = Engine.createContext($('#window')[0]);
+var context = Engine.createContext($('#window')[0], 1000);
 
 exports.context = context;
 exports.Region = rich.Region.extend({context: context});
