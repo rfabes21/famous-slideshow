@@ -2,7 +2,7 @@ define(function (require, exports, module) {
 
 var rich = require('rich');
 var backbone = require('backbone');
-var Modifier = require('famous/core/Modifier');
+var Modifier = require('famous/modifiers/StateModifier');
 var utils = require('app/cube/utils');
 var template = require('hbs!../../templates/cube-view');
 var Easing = require('famous/transitions/Easing');
@@ -59,44 +59,10 @@ var CubeView = rich.CollectionView.extend({
 
         this.collection = new backbone.Collection([front, back, top, bottom]);
 
-
-        // var left = new CubeSide({
-        //     size: [w, h],
-        //     color: utils.colors.blue[9],
-        //     content: 'left',
-        //     tz: w/2,
-        //     ry: -Math.PI/2,
-        // });
-
-        // var right = new CubeSide({
-        //     size: [w, h],
-        //     content: 'right',
-        //     tz: w/2,
-        //     ry: Math.PI/2,
-        // });
-
-        // this.backView   = new CubeSideView({model: back});
-        // this.frontView  = new CubeSideView({model: front});
-        // this.topView    = new CubeSideView({model: top});
-        // this.bottomView = new CubeSideView({model: bottom});
-        // this.leftView   = new CubeSideView({model: left});
-        // this.rightView  = new CubeSideView({model: right});
-
-        // this.addSubview(this.frontView);
-        // this.addSubview(this.backView);
-        // this.addSubview(this.topView);
-        // this.addSubview(this.bottomView);
-        // this.addSubview(this.leftView);
-        // this.addSubview(this.rightView);
-
-
         // prep for animation
         this.modifier = new Modifier();
 
         this.on('childview:click', this.wantsRotateCube.bind(this));
-        // this.listenTo(this.frontView, 'click', this.wantsRotateCube);
-        // this.listenTo(this.bottomView, 'click', this.wantsRotateCube);
-        // this.listenTo(this.topView, 'click', this.wantsRotateCube);
 
     },
 
@@ -116,12 +82,9 @@ var CubeView = rich.CollectionView.extend({
         this.rotation +=(Math.PI/2);
 
         var duration = 500;
-        console.log(this.setTransform);
         this.setTransform(
             Transform.rotateX(this.rotation),
             {duration: duration, curve: Easing.outQuad});
-
-
     },
 
 });

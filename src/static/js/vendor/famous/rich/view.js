@@ -262,7 +262,9 @@ var FamousView = marionette.View.extend({
             target = this._modifier;
         }
 
-        target.setTransform(transform, transition, obj.callback);
+        // target.setTransform(transform, transition, obj.callback);
+
+        console.log(target.setTransform(transform, transition, obj.callback));
 
         return obj.deferred;
     },
