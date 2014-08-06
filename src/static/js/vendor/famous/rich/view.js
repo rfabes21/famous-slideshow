@@ -102,6 +102,7 @@ var FamousView = marionette.View.extend({
             h = this.properties.size[1];
         }
 
+        this._constraintRelations = {};
         this._autolayout.width = autolayout.cv('width', w);
         this._autolayout.height = autolayout.cv('height', h);
         this._autolayout.top = autolayout.cv('top', 0);
@@ -110,30 +111,32 @@ var FamousView = marionette.View.extend({
         this._autolayout.left = autolayout.cv('left', 0);
         this._solver = new autolayout.cassowary.SimplexSolver();
 
-        // add some constraints
-        var width = autolayout.eq(
-            autolayout.minus(this._autolayout.right, this._autolayout.left),
-            this._autolayout.width,
-            autolayout.required
-        );
-
-        var height = autolayout.eq(
-            autolayout.minus(this._autolayout.bottom, this._autolayout.top),
-            this._autolayout.height,
-            autolayout.required
-        );
+        // add some loose constraints about top/left/bottom/right
+        var top = autolayout.geq(this._autolayout.top, 0, autolayout.weak, 1);
+        var right = autolayout.geq(this._autolayout.right, 0, autolayout.weak, 1);
+        var bottom = autolayout.geq(this._autolayout.bottom, 0, autolayout.weak, 1);
+        var left = autolayout.geq(this._autolayout.left, 0, autolayout.weak, 1);
+        var pullLeft = autolayout.eq(this._autolayout.left, 0, autolayout.weak, 1);
+        var pullTop = autolayout.eq(this._autolayout.top, 0, autolayout.weak, 1);
 
         if(this.properties.size){
             this._solver.addStay(this._autolayout.width, autolayout.required, 0);
             this._solver.addStay(this._autolayout.height, autolayout.required, 0);
         }
 
-        this._solver.addConstraint(width);
-        this._solver.addConstraint(height);
+        this._solver.addConstraint(pullLeft);
+        this._solver.addConstraint(pullTop);
+        this._solver.addConstraint(left);
+        this._solver.addConstraint(top);
+        this._solver.addConstraint(right);
+        this._solver.addConstraint(bottom);
+
 
     },
 
     _initializeConstraints: function(){
+        if(this._constraintsInitialized) return;
+
         var size = this.superview.getSize();
         var width = this.superview._autolayout.width.value;
         var height = this.superview._autolayout.height.value;
@@ -142,25 +145,78 @@ var FamousView = marionette.View.extend({
         this._solver.addStay(this.superview._autolayout.height, autolayout.required);
 
         this._solver.addConstraint(
-            autolayout.eq(this._autolayout.width, this.superview._autolayout.width),
+            autolayout.eq(
+                autolayout.plus(this._autolayout.width, this._autolayout.right).plus(this._autolayout.left),
+                this.superview._autolayout.width),
             autolayout.weak, 0
         );
 
         this._solver.addConstraint(
-            autolayout.eq(this._autolayout.height, this.superview._autolayout.height),
+            autolayout.eq(
+                autolayout.plus(this._autolayout.height, this._autolayout.bottom).plus(this._autolayout.top),
+                this.superview._autolayout.height),
             autolayout.weak, 0
         );
 
         _.each(this.constraints, this.addConstraintFromJson, this);
+
+        this._constraintsInitialized = true;
     },
 
     addConstraintFromJson: function(json){
+
         var view = this[json.item];
+
+        if(!view._constraintsInitialized){
+            view._initializeConstraints();
+        }
+
         view.addConstraint(constraintsFromJson(json, this));
     },
 
-    addConstraint: function(constraint){
-        this._solver.addConstraint(constraint);
+    addConstraint: function(options){
+
+        if(options.stays){
+            _.each(options.stays, function(stay){
+                this._solver.addStay(stay, autolayout.weak, 10);
+            }, this);
+        }
+
+        this._solver.addConstraint(options.constraint);
+
+        var vars = this._autolayout;
+        var context = [vars.width, vars.height,
+                       vars.top, vars.right,
+                       vars.bottom, vars.left];
+
+        _.each(this._constraintRelations, function(value){
+            //console.log(this.name, value.name)
+            var solver = value._solver;
+
+            var valueWidth = vars.width.value;
+            var valueHeight = vars.height.value;
+            var valueTop = vars.top.value;
+            var valueRight = vars.right.value;
+            var valueBottom = vars.bottom.value;
+            var valueLeft = vars.left.value;
+
+            solver.addEditVar(vars.width);
+            solver.addEditVar(vars.height);
+            solver.addEditVar(vars.top);
+            solver.addEditVar(vars.right);
+            solver.addEditVar(vars.bottom);
+            solver.addEditVar(vars.left);
+
+            solver.beginEdit();
+            solver.suggestValue(vars.width, valueWidth);
+            solver.suggestValue(vars.height, valueHeight);
+            solver.suggestValue(vars.top, valueTop);
+            solver.suggestValue(vars.right, valueRight);
+            solver.suggestValue(vars.bottom, valueBottom);
+            solver.suggestValue(vars.left, valueLeft);
+            solver.endEdit();
+
+        }, this);
     },
 
     _prepareModification: function(duration, requireModifier){
