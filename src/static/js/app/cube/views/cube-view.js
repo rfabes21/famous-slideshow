@@ -3,22 +3,31 @@ define(function (require, exports, module) {
 var rich = require('rich');
 var Modifier = require('famous/core/Modifier');
 var utils = require('app/cube/utils');
+var template = require('hbs!../../templates/cube-view');
+var Easing = require('famous/transitions/Easing');
 var Transform = require('famous/core/Transform');
 var CubeSide = require('app/cube/models/cube-side').CubeSide;
 var CubeSideView = require('./cube-side-view').CubeSideView;
 
-var size = window.innerHeight;
+var h = window.innerHeight;
+var w = window.innerWidth;
 
-var CubeView = rich.View.extend({
+var CubeView = rich.ItemView.extend({
+    // template: template,
 
     initialize: function(){
+
+        this.rotation = -0.001;
+
         var front = new CubeSide({
+            size: [w, h],
             color: utils.colors.blue[0],
             content: 'front',
             tz: 100,
         });
 
         var back = new CubeSide({
+            size: [w, h],
             color: utils.colors.blue[3],
             content: 'back',
             tz: 100,
@@ -26,6 +35,7 @@ var CubeView = rich.View.extend({
         });
 
         var top = new CubeSide({
+            size: [w, h],
             color: utils.colors.blue[5],
             content: 'top',
             tz: 100,
@@ -33,6 +43,7 @@ var CubeView = rich.View.extend({
         });
 
         var bottom = new CubeSide({
+            size: [w, h],
             color: utils.colors.blue[7],
             content: 'bottom',
             tz: 100,
@@ -40,6 +51,7 @@ var CubeView = rich.View.extend({
         });
 
         var left = new CubeSide({
+            size: [w, h],
             color: utils.colors.blue[9],
             content: 'left',
             tz: 100,
@@ -47,6 +59,7 @@ var CubeView = rich.View.extend({
         });
 
         var right = new CubeSide({
+            size: [w, h],
             content: 'right',
             tz: 100,
             ry: Math.PI/2,
@@ -66,7 +79,14 @@ var CubeView = rich.View.extend({
         this.addSubview(this.leftView);
         this.addSubview(this.rightView);
 
+
+        // prep for animation
+        this.modifier = new Modifier();
+
+        this.listenTo(this.backView, 'click', this.wantsRotateCube);
         this.listenTo(this.frontView, 'click', this.wantsRotateCube);
+        this.listenTo(this.bottomView, 'click', this.wantsRotateCube);
+        this.listenTo(this.topView, 'click', this.wantsRotateCube);
 
     },
 
@@ -79,7 +99,14 @@ var CubeView = rich.View.extend({
     },
 
     rotateCube: function(){
-        this.setTransform(Transform.rotateX(Math.PI/2));
+        this.rotation +=(Math.PI/2);
+
+        var duration = 1000;
+        this.setTransform(
+            Transform.rotateX(this.rotation),
+            {duration: duration, curve: Easing.outQuad});
+
+
     },
 
 });

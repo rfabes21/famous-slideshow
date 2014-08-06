@@ -12,7 +12,7 @@ var CubeSideView = rich.ItemView.extend({
     className: 'cube-side',
 
     triggers: {
-            'click': 'click'
+        'click': 'click'
     },
 
     initialize: function(){

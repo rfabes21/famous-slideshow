@@ -24,7 +24,9 @@ var CubeLayout = rich.LayoutView.extend({
     },
 
     onShow : function(){
-        this.cube.show(new CubeView());
+        this.cube.show(new CubeView({
+            origin: [0.5, 0.5]
+        }));
     },
 
 });

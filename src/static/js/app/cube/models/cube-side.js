@@ -3,7 +3,7 @@ define(function( require, exports, module ){
 var backbone = require('backbone');
 var CubeSide = backbone.Model.extend({
     defaults: {
-        size: [200, 200],
+        size: null,
         color: 'red',
         content: null,
         tx: 0,
