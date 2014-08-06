@@ -23,7 +23,8 @@ exports.constraintsFromJson = function(json, view){
     var itemAttribute = item._autolayout[json.attribute];
     var leafs = false;
     var related;
-    var solve;
+    var leftExpression = itemAttribute;
+    var rightExpression;
     var strength = autolayout.weak;
     var stays = [];
 
@@ -53,19 +54,24 @@ exports.constraintsFromJson = function(json, view){
     }
 
     if(!toAttribute){
-        solve = constant;
+        rightExpression = constant;
         // do we want to set a strength if they are only modifying a prop?
         // strength = autolayout.strong;
     } else {
-        var result = buildExpression(item, toItem, toAttribute, multiplier, constant);
-        solve = result.expression;
+        var result = buildExpression(item, itemAttribute, toItem, toAttribute, multiplier, constant);
+        rightExpression = result.rightExpression;
+        leftExpression = result.leftExpression;
         stays = result.stays;
         toItem._constraintRelations[item.cid] = item;
     }
+    if(item.name == 'button'){
+        // console.log(leftExpression.toString())
+        // console.log(rightExpression.toString())
 
+    }
     var constraint = related(
-        itemAttribute,
-        solve,
+        leftExpression,
+        rightExpression,
         strength,
         2
     );
@@ -76,7 +82,9 @@ exports.constraintsFromJson = function(json, view){
     };
 };
 
-function buildExpression(item, toItem, toAttribute, multiplier, constant){
+function buildExpression(item, itemAttribute, toItem, toAttribute, multiplier, constant){
+    var leftExpression = itemAttribute;
+    var rightExpression;
     var value = toAttribute;
     var stays = [toAttribute];
 
@@ -85,29 +93,53 @@ function buildExpression(item, toItem, toAttribute, multiplier, constant){
     // to each other not the walls of their superview.
     itemsAreLeaves = (item.superview == toItem.superview);
 
-    console.log('-- expression for \'' + item.name + '\' -> \'' + toItem.name + '\'');
-
     if(itemsAreLeaves){
-        console.log('-- laeves \'' + item.name + '\' & \'' + toItem.name + '\'');
 
         switch(toAttribute.name){
             case 'right':
                 value = autolayout.plus(toItem._autolayout.left, toItem._autolayout.width);
                 stays = [toItem._autolayout.left, toItem._autolayout.width, toItem._autolayout.right];
+
+                if(itemAttribute.name == 'right'){
+                    leftExpression = autolayout.plus(item._autolayout.left, item._autolayout.width);
+                }
                 break;
 
             case 'bottom':
                 value = autolayout.plus(toItem._autolayout.top, toItem._autolayout.height);
                 stays = [toItem._autolayout.top, toItem._autolayout.height, toItem._autolayout.bottom];
+
+                if(itemAttribute.name == 'bottom'){
+                    leftExpression = autolayout.plus(item._autolayout.top, item._autolayout.height);
+                }
                 break;
+
+            case 'left':
+                value = autolayout.plus(toItem._autolayout.right, toItem._autolayout.width);
+                stays = [toItem._autolayout.right, toItem._autolayout.width, toItem._autolayout.right];
+
+                if(itemAttribute.name == 'left'){
+                    leftExpression = autolayout.plus(item._autolayout.right, item._autolayout.width);
+                }
+                break;
+
+            // case 'top':
+            //     value = autolayout.plus(toItem._autolayout.bottom, toItem._autolayout.height);
+            //     stays = [toItem._autolayout.bottom, toItem._autolayout.height, toItem._autolayout.bottom];
+
+            //     if(itemAttribute.name == 'top'){
+            //         leftExpression = autolayout.plus(item._autolayout.bottom, item._autolayout.height);
+            //     }
+            //     break;
         }
     }
 
     var times = autolayout.times(multiplier, value, autolayout.weak, 0);
-    var expression = autolayout.plus(times, constant, autolayout.weak, 0);
+    rightExpression = autolayout.plus(times, constant, autolayout.weak, 0);
 
     return {
-        expression: expression,
+        rightExpression: rightExpression,
+        leftExpression: leftExpression,
         stays: stays
     };
 }
