@@ -6,15 +6,15 @@ var Transform = require('famous/core/Transform');
 var app = require('app/famous/core');
 var CubeView = require('./cube-view').CubeView;
 
-//cube height
-var cubeHeight = window.innerHeight;
+var w = window.innerWidth;
+var h = window.innerHeight;
 
 var CubeLayout = rich.LayoutView.extend({
     name: 'CubeLayout',
     shouldInitializeRenderable: false,
     regions:{
         cube: rich.Region.extend({
-            size: [true, cubeHeight],
+            size: [true, h],
             modifier: function(){
                 return new Modifier({
                     origin: [0.5, 0.5]
@@ -24,9 +24,7 @@ var CubeLayout = rich.LayoutView.extend({
     },
 
     onShow : function(){
-        this.cube.show(new CubeView({
-            origin: [0.5, 0.5]
-        }));
+        this.cube.show(new CubeView());
     },
 
 });
