@@ -103,7 +103,7 @@ define(function (require, exports, module) {
         onElement: function(){
 
             this.$el.css({
-                overflow:'hidden'
+                // overflow:'hidden'
                 // border: '1px solid red'
             });
 
@@ -146,7 +146,7 @@ define(function (require, exports, module) {
             this._positionX.set(x);
             this._positionY.set(y);
             this._particle.setPosition([x, y]);
-            this._scrollableView.invalidate();
+            this._scrollableView.invalidateView();
         },
 
         addSubview: function(view){

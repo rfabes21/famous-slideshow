@@ -2,7 +2,7 @@ define(function (require, exports, module) {
 
 var rich = require('rich');
 var backbone = require('backbone');
-var Modifier = require('famous/modifiers/StateModifier');
+var Modifier = require('famous/core/Modifier');
 var utils = require('app/cube/utils');
 var template = require('hbs!../../templates/cube-view');
 var Easing = require('famous/transitions/Easing');
@@ -10,25 +10,24 @@ var Transform = require('famous/core/Transform');
 var CubeSide = require('app/cube/models/cube-side').CubeSide;
 var CubeSideView = require('./cube-side-view').CubeSideView;
 
-var w = window.innerWidth * 0.5;
-var h = window.innerHeight * 0.5;
+var w = window.innerWidth * 0.6;
+var h = window.innerHeight * 0.6;
 
 var CubeView = rich.CollectionView.extend({
-
+    childView: CubeSideView,
+    _yPos: 0,
+    _rotation: 0,
     events: {
         'childview:click': 'wantsRotateCube'
     },
 
-    childView: CubeSideView,
-
     initialize: function(){
-        this.name = 'foo';
 
         this.rotation = 0;
 
         var front = new CubeSide({
             size: [w, h],
-            color: utils.colors.blue[0],
+            color: utils.colors.blue[1],
             content: 'front',
             tz: h/2,
         });
@@ -59,8 +58,23 @@ var CubeView = rich.CollectionView.extend({
 
         this.collection = new backbone.Collection([front, back, top, bottom]);
 
-        // prep for animation
-        this.modifier = new Modifier();
+        // prep for animation and move
+        // container with scrollView
+        var rotationMod = new Modifier();
+        var positionMod = new Modifier();
+
+        this.modifier = [rotationMod];
+
+        var self = this;
+
+        positionMod.transformFrom(function(){
+            return Transform.translate(0, self._yPos, 0);
+        });
+
+        rotationMod.transformFrom(function(){
+            return Transform.rotateX(self._rotation);
+        });
+
 
         this.on('childview:click', this.wantsRotateCube.bind(this));
 
@@ -70,18 +84,26 @@ var CubeView = rich.CollectionView.extend({
         return new Modifier();
     },
 
-    onShow: function(){
-
+    scrollPosition: function(yPos){
+        this._yPos = yPos;
+        this.invalidateView();
+        var percent = Math.abs(yPos/(h*2));
+        // this.setRotationPos(percent);
+        this._rotation = percent;
     },
 
     wantsRotateCube: function(){
         this.rotateCube();
     },
 
-    rotateCube: function(){
-        this.rotation +=(Math.PI/2);
+    radiansCalc: function(degrees){
+        return degrees * Math.PI / 180;
+    },
 
-        var duration = 500;
+    rotateCube: function(){
+        this.rotation += this.radiansCalc(90);
+
+        var duration = 1000;
         this.setTransform(
             Transform.rotateX(this.rotation),
             {duration: duration, curve: Easing.outQuad});

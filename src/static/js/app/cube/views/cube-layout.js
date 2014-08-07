@@ -5,6 +5,7 @@ var Modifier = require('famous/core/Modifier');
 var Transform = require('famous/core/Transform');
 var app = require('app/famous/core');
 var CubeView = require('./cube-view').CubeView;
+var CubeScrollView = require('./cube-scroll-view').CubeScrollView;
 
 var w = window.innerWidth;
 var h = window.innerHeight;
@@ -14,17 +15,17 @@ var CubeLayout = rich.LayoutView.extend({
     shouldInitializeRenderable: false,
     regions:{
         cube: rich.Region.extend({
-            size: [true, h],
+            size: [w, h],
             modifier: function(){
                 return new Modifier({
-                    origin: [0.5, 0.5]
+                    // origin: [0.5, 0.5]
                 });
-            },
-        }),
+            }
+        })
     },
 
     onShow : function(){
-        this.cube.show(new CubeView());
+        this.cube.show(new CubeScrollView());
     },
 
 });
